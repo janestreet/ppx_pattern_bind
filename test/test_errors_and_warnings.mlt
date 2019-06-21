@@ -1,0 +1,283 @@
+open Core
+
+module Incr = Incremental.Make ()
+
+type pair =
+  | Multi_arg of int * bool
+  | Tuple of (int * bool)
+
+let multi_arg =
+  let pair = Incr.Var.create (Multi_arg (0, true)) in
+  Incr.Var.watch pair
+;;
+
+(* Let_syntax must be open *)
+let _ =
+  match%pattern_bind multi_arg with
+  | Multi_arg (10, x) -> x
+  | Multi_arg (_, x) -> x
+  | Tuple _ -> Incr.return true
+;;
+
+[%%expect {|
+Line _, characters 2-120:
+Error: Unbound module Let_syntax
+|}]
+
+let _ =
+  let open Incr.Let_syntax in
+  match%pattern_bind multi_arg with
+  | Multi_arg (10, x) -> x
+  | Multi_arg (_, x) -> x
+  | Tuple _ -> Incr.return true
+;;
+
+[%%expect {| |}]
+
+let _ =
+  let open Incr.Let_syntax in
+  match%pattern_map multi_arg with
+  | Multi_arg (10, x) -> x
+  | Multi_arg (_, x) -> x
+  | Tuple _ -> true
+;;
+
+[%%expect {| |}]
+
+type singleton = A of int
+
+let s = Incr.Var.watch (Incr.Var.create (A 10))
+
+(* Works with single-constructor variants *)
+let _ =
+  let open Incr.Let_syntax in
+  match%pattern_bind s with
+  | A x -> x
+;;
+
+[%%expect {| |}]
+
+let _ =
+  let open Incr.Let_syntax in
+  match%pattern_map s with
+  | A x -> x
+;;
+
+[%%expect {| |}]
+
+(* Gives exhaustiveness warnings *)
+let _ =
+  let open Incr.Let_syntax in
+  match%pattern_bind multi_arg with
+  | Multi_arg (10, x) -> x
+;;
+
+[%%expect
+  {|
+Line _, characters 2-62:
+Error (Warning 8): this pattern-matching is not exhaustive.
+Here is an example of a case that is not matched:
+Multi_arg (0, _)
+Line _, characters 4-21:
+Error (Warning 8): this pattern-matching is not exhaustive.
+Here is an example of a case that is not matched:
+Multi_arg (0, _)
+|}]
+
+let _ =
+  let open Incr.Let_syntax in
+  match%pattern_map multi_arg with
+  | Multi_arg (10, x) -> x
+;;
+
+[%%expect
+  {|
+Line _, characters 2-61:
+Error (Warning 8): this pattern-matching is not exhaustive.
+Here is an example of a case that is not matched:
+Multi_arg (0, _)
+Line _, characters 4-21:
+Error (Warning 8): this pattern-matching is not exhaustive.
+Here is an example of a case that is not matched:
+Multi_arg (0, _)
+|}]
+
+open Incr.Let_syntax
+
+(* Binding module in patterns is not allowed with pattern_bind, because it cannot be made
+   to work (can't make them incremental of a (second-class) module). In principle
+   match%pattern_map could support it, though it's not clear if this is better than being
+   consistent with match%pattern_bind. *)
+
+module type S = sig
+  val y : int
+end
+
+let foo m =
+  match%pattern_bind m with
+  | (module M
+      : S) -> return M.y
+;;
+
+[%%expect
+  {|
+Line _, characters 4-24:
+Error: %pattern_bind cannot be used with (module ..) patterns.
+|}]
+
+let foo m =
+  match%pattern_map m with
+  | (module M
+      : S) -> M.y
+;;
+
+[%%expect
+  {|
+Line _, characters 4-24:
+Error: %pattern_map cannot be used with (module ..) patterns.
+|}]
+
+let foo m =
+  let%pattern_bind (module M : S) = m in
+  return M.y
+;;
+
+[%%expect
+  {|
+Line _, characters 19-33:
+Error: %pattern_bind cannot be used with (module ..) patterns.
+|}]
+
+let foo m =
+  let%pattern_map (module M : S) = m in
+  M.y
+;;
+
+[%%expect
+  {|
+Line _, characters 18-32:
+Error: %pattern_map cannot be used with (module ..) patterns.
+|}]
+
+(* Unused variable warnings work, first for pattern_bind *)
+let bar e =
+  match%pattern_bind e with
+  | A x -> Incr.const 0
+;;
+
+[%%expect {|
+Line _, characters 6-7:
+Error (Warning 26): unused variable x.
+|}]
+
+let baz e =
+  match%pattern_bind e with
+  | x -> Incr.const 0
+;;
+
+[%%expect {|
+Line _, characters 4-5:
+Error (Warning 26): unused variable x.
+|}]
+
+let abc e =
+  let%pattern_bind x, _ = e in
+  Incr.return 0
+;;
+
+[%%expect {|
+Line _, characters 19-20:
+Error (Warning 26): unused variable x.
+|}]
+
+let def e =
+  let%pattern_bind x, y = e in
+  Incr.return 0
+;;
+
+[%%expect
+  {|
+Line _, characters 19-20:
+Error (Warning 26): unused variable x.
+Line _, characters 22-23:
+Error (Warning 26): unused variable y.
+|}]
+
+(* Still used warnings, but for pattern_map *)
+
+let boo e =
+  let%pattern_map x = e in
+  0
+;;
+
+[%%expect {|
+Line _, characters 18-19:
+Error (Warning 27): unused variable x.
+|}]
+
+let abc e =
+  let%pattern_map x, _ = e in
+  0
+;;
+
+[%%expect {|
+Line _, characters 18-19:
+Error (Warning 27): unused variable x.
+|}]
+
+let bar e =
+  match%pattern_map e with
+  | A x -> 0
+;;
+
+[%%expect {|
+Line _, characters 6-7:
+Error (Warning 27): unused variable x.
+|}]
+
+let baz e =
+  match%pattern_map e with
+  | x -> 0
+;;
+
+[%%expect {|
+Line _, characters 4-5:
+Error (Warning 27): unused variable x.
+|}]
+
+(* Duplicate variable error points to the right place *)
+let biz e =
+  match%pattern_bind e with
+  | x, x -> Incr.const 0
+;;
+
+[%%expect
+  {|
+Line _, characters 7-8:
+Error: Variable x is bound several times in this matching
+|}]
+
+let biz e =
+  match%pattern_map e with
+  | x, x -> 0
+;;
+
+[%%expect
+  {|
+Line _, characters 7-8:
+Error: Variable x is bound several times in this matching
+|}]
+
+(* Typechecking pattern_bind *)
+let foo big_tuple =
+  let%pattern_bind a, b, c, d, e = big_tuple in
+  ignore (a, b, c, d, e);
+  true
+;;
+
+[%%expect
+  {|
+Line _, characters 2-6:
+Error: This expression has type bool but an expression was expected of type
+         'a Incr.t
+|}]
