@@ -115,25 +115,23 @@ end
 
 let foo m =
   match%pattern_bind m with
-  | (module M
-      : S) -> return M.y
+  | (module M : S) -> return M.y
 ;;
 
 [%%expect
   {|
-Line _, characters 4-24:
+Line _, characters 4-18:
 Error: %pattern_bind cannot be used with (module ..) patterns.
 |}]
 
 let foo m =
   match%pattern_map m with
-  | (module M
-      : S) -> M.y
+  | (module M : S) -> M.y
 ;;
 
 [%%expect
   {|
-Line _, characters 4-24:
+Line _, characters 4-18:
 Error: %pattern_map cannot be used with (module ..) patterns.
 |}]
 

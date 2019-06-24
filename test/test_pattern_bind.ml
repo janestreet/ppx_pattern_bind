@@ -21,7 +21,7 @@ type t =
   | Tuple of (int * bool)
   | Multi_arg_tuple of int * bool
   | Constructor of t * t
-  | Variant of [`A | `B of bool]
+  | Variant of [ `A | `B of bool ]
   | Record of { i : int }
   | Array of int array
   | Or_a of int * bool
@@ -62,8 +62,7 @@ let%test "patterns" =
     | Record { i = j } -> j
     | Array [| x |] -> x
     | Array _ -> return 8
-    | Or_a (i, _)
-    | Or_b (_, i) -> i
+    | Or_a (i, _) | Or_b (_, i) -> i
     | Constraint (i : int) -> i
     | Lazy i ->
       let%map i = i in
@@ -89,12 +88,14 @@ let _ =
 
 type onetwo =
   [ `One
-  | `Two ]
+  | `Two
+  ]
 
 type three =
   [ `One
   | `Two
-  | `Three ]
+  | `Three
+  ]
 
 let%test "type patterns" =
   let node =
