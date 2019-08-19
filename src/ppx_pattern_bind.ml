@@ -90,7 +90,10 @@ let error_if_invalid_pattern extension pattern =
 ;;
 
 let warning_attribute ~loc str =
-  (Loc.make ~loc "ocaml.warning", PStr [ pstr_eval ~loc (estring ~loc str) [] ])
+  attribute
+    ~loc
+    ~name:(Loc.make ~loc "ocaml.warning")
+    ~payload:(PStr [ pstr_eval ~loc (estring ~loc str) [] ])
 
 (* Translations for match%pattern_bind
 
