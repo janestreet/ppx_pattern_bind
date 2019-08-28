@@ -78,7 +78,7 @@ let%test "patterns" =
 ;;
 
 (* Polymorphic variants *)
-let _ =
+let (_ : bool Incr.t) =
   let open Incr.Let_syntax in
   match%pattern_map return (`A (10, true, false)) with
   | `A (10, x, y) -> x && y
