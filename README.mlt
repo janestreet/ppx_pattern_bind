@@ -208,10 +208,10 @@ let f e  = match%pattern_bind e with x when is_ok x -> return 0
 
 [%%expect
   {|
-Line _, characters 37-51:
+Line _, characters _-_:
 Error: %pattern_bind cannot be used with (module ..) patterns.
-Line _, characters 53-64:
+Line _, characters _-_:
 Error: %pattern_bind cannot be used with exception patterns.
-Line _, characters 44-51:
+Line _, characters _-_:
 Error: %pattern_bind cannot be used with `when`.
 |}]
