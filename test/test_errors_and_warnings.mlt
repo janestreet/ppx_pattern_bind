@@ -277,5 +277,5 @@ let foo big_tuple =
   {|
 Line _, characters _-_:
 Error: This expression has type bool but an expression was expected of type
-         'a Incr.t
+         'a Incr.t = ('a, Incr.state_witness) Incremental.t
 |}]
