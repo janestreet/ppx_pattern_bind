@@ -33,7 +33,7 @@ let replace_variable ~f =
       method! pattern p =
         let pat = super#pattern p in
         let loc = p.ppat_loc in
-        match p.ppat_desc with
+        match pat.ppat_desc with
         | Ppat_var v ->
           (match f v with
            | `Rename tmpvar -> ppat_var ~loc { txt = tmpvar; loc = v.loc }
