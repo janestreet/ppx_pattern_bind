@@ -30,6 +30,17 @@ type t =
   | Lazy of int lazy_t
   | Open of M.t
 
+let%test "recursive as-pattern" =
+  let (_ : unit Incr.t) =
+    match%pattern_bind Incr.const () with
+    | () as x as y ->
+      let (_ : unit Incr.t) = x
+      and (_ : unit Incr.t) = y in
+      return ()
+  in
+  true
+;;
+
 let%test "patterns" =
   let node =
     match%pattern_bind return (Constructor (Record { i = 10 }, Interval 'a')) with

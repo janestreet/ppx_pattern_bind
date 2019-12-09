@@ -31,7 +31,7 @@ let replace_variable ~f =
     object
       inherit Ast_traverse.map as super
       method! pattern p =
-        let pat = super#pattern p in
+        let p = super#pattern p in
         let loc = p.ppat_loc in
         match p.ppat_desc with
         | Ppat_var v ->
@@ -42,7 +42,7 @@ let replace_variable ~f =
           (match f v with
            | `Rename tmpvar -> ppat_alias ~loc sub { txt = tmpvar; loc = v.loc }
            | `Remove -> sub)
-        | _ -> pat
+        | _ -> p
     end
   in
   replacer#pattern
