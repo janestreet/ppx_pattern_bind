@@ -21,7 +21,7 @@ let name_expr expr = (* to avoid duplicating non-value expressions *)
   match expr.pexp_desc with
   | Pexp_ident _ -> [], expr
   | _ ->
-    let loc = expr.pexp_loc in
+    let loc = { expr.pexp_loc with loc_ghost = true } in
     let var = gen_symbol  ~prefix:gen_symbol_prefix () in
     [ value_binding ~loc ~pat:(pvar ~loc var) ~expr ], evar ~loc var
 ;;
@@ -32,7 +32,7 @@ let replace_variable ~f =
       inherit Ast_traverse.map as super
       method! pattern p =
         let p = super#pattern p in
-        let loc = p.ppat_loc in
+        let loc = { p.ppat_loc with loc_ghost = true } in
         match p.ppat_desc with
         | Ppat_var v ->
           (match f v with
@@ -175,6 +175,7 @@ let project_bound_vars ~loc exp ~lhs =
 ;;
 
 let projected_vars_rhs extension ~loc ~bindings ~rhs =
+  let loc = { loc with loc_ghost = true } in
   let let_ = pexp_let ~loc Nonrecursive bindings rhs in
   match extension with
   | Bind -> let_
@@ -200,7 +201,7 @@ let projected_vars_rhs extension ~loc ~bindings ~rhs =
    ]}
 *)
 let expand_case extension exp (idx, match_case) ~assume_lhs_is_exhaustive =
-  let loc = match_case.pc_lhs.ppat_loc in
+  let loc = { match_case.pc_lhs.ppat_loc with loc_ghost = true } in
   let rhs =
     projected_vars_rhs extension ~loc
       ~bindings:(project_bound_vars ~loc exp
@@ -235,6 +236,7 @@ let case_number ~loc exp indexed_cases =
 ;;
 
 let expand_match extension ~loc expr cases =
+  let loc = { loc with loc_ghost = true } in
   List.iter cases ~f:(fun { pc_lhs; pc_guard; _ } ->
     error_if_invalid_pattern extension pc_lhs;
     (match pc_guard with
@@ -252,7 +254,8 @@ let expand_match extension ~loc expr cases =
   let case_number_cases = case_number_cases ~loc extension expr indexed_cases in
   pexp_let ~loc Nonrecursive expr_binding
     (Ppx_let_expander.expand ~modul:None Bind
-       (pexp_match ~loc case_number case_number_cases))
+       (Merlin_helpers.hide_expression
+          (pexp_match ~loc case_number case_number_cases)))
 ;;
 
 (* Translations for let%pattern_bind
@@ -275,7 +278,7 @@ let expand_match extension ~loc expr cases =
 
 let project_bound_vars_list l =
   List.concat_map l ~f:(fun vb ->
-    let loc = vb.pvb_loc in
+    let loc = { vb.pvb_loc with loc_ghost = true } in
     project_bound_vars ~loc vb.pvb_expr
       ~lhs:{ pat = vb.pvb_pat; assume_is_exhaustive = true })
 ;;
@@ -289,7 +292,12 @@ let expand_let extension ~loc vbs exp =
          b, { vb with pvb_expr = expr }))
   in
   let with_projections =
-    let bindings = project_bound_vars_list vbs in
+    let loc = { loc with loc_ghost = true } in
+    let bindings =
+      List.map (project_bound_vars_list vbs) ~f:(fun vb ->
+        { vb with pvb_expr = Merlin_helpers.hide_expression vb.pvb_expr }
+      )
+    in
     let let_ = projected_vars_rhs extension ~loc ~bindings ~rhs:exp in
     match extension with
     | Map -> let_
