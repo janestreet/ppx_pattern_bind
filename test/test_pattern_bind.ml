@@ -296,3 +296,14 @@ let%expect_test _ =
   Incr.Observer.disallow_future_use map_pattern;
   Incr.Observer.disallow_future_use map_normal
 ;;
+
+let%expect_test "ppx should work with the defunctorized incremental" =
+  let return = Incremental.return in
+  let open Incremental.Let_syntax in
+  ignore
+    (let%pattern_bind a, b = return Incr.State.t (1, 2) in
+     let%map a = a
+     and b = b in
+     a + b
+     : int Incr.t)
+;;

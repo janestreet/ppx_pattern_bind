@@ -298,13 +298,14 @@ let expand_let extension ~loc vbs exp =
         { vb with pvb_expr = Merlin_helpers.hide_expression vb.pvb_expr }
       )
     in
-    let let_ = projected_vars_rhs extension ~loc ~bindings ~rhs:exp in
-    match extension with
-    | Map -> let_
-    | Bind ->
-      (* For [let], we don't bind on the match case, so nothing constrains [let_] to be an
-         incremental. The [if false] compensates. *)
-      [%expr if false then return (assert false) else [%e let_]]
+    (* For [let%pattern_bind], we don't bind on the match case, so nothing constrains
+       [let_] to be an incremental. We used to generate [if false then return (assert
+       false) else let_] to compensate, but that causes problems with the defunctorized
+       interface of incremental, as [return] takes an extra argument. [if false then map
+       (assert false) ~f:Fn.id else let_] avoids that but causes type errors in bonsai
+       where they sort of abuse this preprocessor by using this with this thing that's
+       not a monad (see legacy_api.ml). *)
+    projected_vars_rhs extension ~loc ~bindings ~rhs:exp
   in
   pexp_let ~loc Nonrecursive (List.concat bindings) with_projections
 ;;

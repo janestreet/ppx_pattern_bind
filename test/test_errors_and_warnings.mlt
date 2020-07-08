@@ -265,17 +265,3 @@ let biz e =
 Line _, characters _-_:
 Error: Variable x is bound several times in this matching
 |}]
-
-(* Typechecking pattern_bind *)
-let foo big_tuple =
-  let%pattern_bind a, b, c, d, e = big_tuple in
-  ignore (a, b, c, d, e : _);
-  true
-;;
-
-[%%expect
-  {|
-Line _, characters _-_:
-Error: This expression has type bool but an expression was expected of type
-         'a Incr.t = ('a, Incr.state_witness) Incremental.t
-|}]
