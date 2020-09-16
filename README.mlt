@@ -31,6 +31,7 @@ module A_model = struct
   let render t =
     let%map t = t in
     Int.to_string t
+  ;;
 end
 
 module B_model = struct
@@ -39,10 +40,10 @@ module B_model = struct
   let render t =
     let%map t = t in
     Float.to_string t
+  ;;
 end
 
-[%%org
-  {|
+[%%org {|
 The final model type combines the underlying models under a variant.
 |}]
 
@@ -57,7 +58,6 @@ end
 Writing a render function for this is a little tricky. We could do it
 as follows, using bind:
 |}]
-
 
 let render (m : Model.t Incr.t) =
   match%bind m with
@@ -75,14 +75,14 @@ With ~match%pattern_bind~, we can build a more incremental version of
 this computation as follows (note that ~x~ and ~y~ are incremental nodes).
 |}]
 
-
-let render (m:Model.t Incr.t) =
+let render (m : Model.t Incr.t) =
   match%pattern_bind m with
   | A x -> A_model.render x
   | B y -> B_model.render y
 ;;
 
-[%%org {|
+[%%org
+  {|
 The bind part of this computation only refires when the /case/ of the
 match changes and not when the variant fields change.
 
@@ -108,7 +108,8 @@ let increment_model (m : Tuple_model.t Incr.t) =
   | B y -> Model.B (y +. 1.)
 ;;
 
-[%%org {|
+[%%org
+  {|
 Another use case for ~%pattern_bind~ occurs with incremental records. Often, we
 wish to construct a new node that depends on only few values from the record.
 A correct, but not very incremental, way of doing this would be to simply pattern
@@ -116,31 +117,32 @@ match on the record.
 |}]
 
 module Record_model = struct
-  type t = {
-    a : int
-  ; b : bool
-  ; c : float
-  }
+  type t =
+    { a : int
+    ; b : bool
+    ; c : float
+    }
   [@@deriving fields]
 end
 
-let render_ab a b =
-  if b then Int.to_string a else "Error"
+let render_ab a b = if b then Int.to_string a else "Error"
 
 let render (m : Record_model.t Incr.t) =
-  let%map {a; b; _} = m in
+  let%map { a; b; _ } = m in
   render_ab a b
 ;;
 
-[%%org {|
+[%%org
+  {|
 Since ~%pattern_bind~ projects out each variable from a pattern separately, we
 can get more incrementality with a ~let%pattern_bind~, which is equivalent to
 a ~match%pattern_bind~ with a single case:
 |}]
 
 let render (m : Record_model.t Incr.t) =
-  let%pattern_bind {a; b; _} = m in
-  let%map a = a and b = b in
+  let%pattern_bind { a; b; _ } = m in
+  let%map a = a
+  and b = b in
   render_ab a b
 ;;
 
@@ -149,7 +151,7 @@ For convenience, we also have a ~let%pattern_map~:
 |}]
 
 let render (m : Record_model.t Incr.t) =
-  let%pattern_map {a; b; _} = m in
+  let%pattern_map { a; b; _ } = m in
   render_ab a b
 ;;
 
@@ -165,13 +167,13 @@ to be an incremental, regardless of the nesting structure of the
 pattern.
 
 For example, the right hand side of a case such as
-|}];;
-
+|}]
 
 let f e =
   match%pattern_bind e with
-  | ((x,_),_,(_,y)) ->
-    let%map x = x and y = y in
+  | (x, _), _, (_, y) ->
+    let%map x = x
+    and y = y in
     x + y
 ;;
 
@@ -181,13 +183,20 @@ is translated to
 
 let f e =
   let v = e in
-  let x = match%map v with ((x,_),_,(_,_)) -> x
-  and y = match%map v with ((_,_),_,(_,y)) -> y in
-  let%map x = x and y = y in
+  let x =
+    match%map v with
+    | (x, _), _, (_, _) -> x
+  and y =
+    match%map v with
+    | (_, _), _, (_, y) -> y
+  in
+  let%map x = x
+  and y = y in
   x + y
 ;;
 
-[%%org {|
+[%%org
+  {|
 * Unsupported Patterns
 
 Patterns that bind module names are not supported, as shown below. This
@@ -202,9 +211,21 @@ the right hand side, or both, and this matters for warnings and not depending
 on spurious values.
 |}]
 
-let f e  = match%pattern_bind e with (module M : S) -> return 0
-let f e  = match%pattern_bind e with x -> return 0 | exception _ -> return 1
-let f e  = match%pattern_bind e with x when is_ok x -> return 0
+let f e =
+  match%pattern_bind e with
+  | (module M : S) -> return 0
+;;
+
+let f e =
+  match%pattern_bind e with
+  | x -> return 0
+  | exception _ -> return 1
+;;
+
+let f e =
+  match%pattern_bind e with
+  | x when is_ok x -> return 0
+;;
 
 [%%expect
   {|
