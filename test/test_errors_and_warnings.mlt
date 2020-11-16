@@ -76,11 +76,11 @@ let (_ : _) =
 Line _, characters _-_:
 Error (warning 8): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-Multi_arg (0, _)
+(Multi_arg (0, _)|Tuple (_, _))
 Line _, characters _-_:
 Error (warning 8): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-Multi_arg (0, _)
+(Multi_arg (0, _)|Tuple (_, _))
 |}]
 
 let (_ : _) =
@@ -94,11 +94,11 @@ let (_ : _) =
 Line _, characters _-_:
 Error (warning 8): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-Multi_arg (0, _)
+(Multi_arg (0, _)|Tuple (_, _))
 Line _, characters _-_:
 Error (warning 8): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-Multi_arg (0, _)
+(Multi_arg (0, _)|Tuple (_, _))
 |}]
 
 open Incr.Let_syntax

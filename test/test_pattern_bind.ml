@@ -1,4 +1,5 @@
 open Core
+open Ppxlib
 module Incr = Incremental.Make ()
 open Incr.Let_syntax
 
@@ -306,4 +307,37 @@ let%expect_test "ppx should work with the defunctorized incremental" =
      and b = b in
      a + b
      : int Incr.t)
+;;
+
+let loc = Location.none
+let modul = Some { txt = lident "Module"; loc }
+let print_expr expr = Pprintast.string_of_expression expr |> print_string
+
+let%expect_test "module-qualified match%pattern_bind" =
+  Ppx_pattern_bind.expand
+    Ppx_pattern_bind.bind
+    ~modul
+    ~loc
+    [%expr
+      match MY_EXPR with
+      | Choice_1 x -> CHOICE_1_BODY]
+  |> print_expr;
+  [%expect
+    {|
+    let __pattern_syntax__001_ = MY_EXPR in
+    ((Module.Let_syntax.Let_syntax.bind
+        ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
+            ~f:(function | Choice_1 x -> 0))[@ocaml.warning "-26-27"])
+        ~f:(function
+            | 0 ->
+                let x =
+                  ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
+                      ~f:(function
+                          | Choice_1 __pattern_syntax__002_ ->
+                              __pattern_syntax__002_))
+                  [@merlin.hide ]) in
+                CHOICE_1_BODY
+            | _ -> assert false))
+      [@merlin.hide ])
+     |}]
 ;;
