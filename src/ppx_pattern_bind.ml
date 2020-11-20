@@ -83,7 +83,7 @@ module Map : Ext = struct
     let loc = { loc with loc_ghost = true } in
     let let_ = pexp_let ~loc Nonrecursive projection_bindings rhs in
     match projection_bindings with
-    | [] -> [%expr return [%e rhs]]
+    | [] -> Ppx_let_expander.qualified_return ~loc ~modul rhs
     | _ :: _ ->
       Ppx_let_expander.expand
         Ppx_let_expander.map

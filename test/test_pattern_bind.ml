@@ -341,3 +341,42 @@ let%expect_test "module-qualified match%pattern_bind" =
       [@merlin.hide ])
      |}]
 ;;
+
+let%expect_test "module-qualified let%pattern_bind" =
+  Ppx_pattern_bind.expand
+    Ppx_pattern_bind.bind
+    ~modul
+    ~loc
+    [%expr
+      let x, y = EXPR in
+      BODY]
+  |> print_expr;
+  [%expect
+    {|
+    let __pattern_syntax__003_ = EXPR in
+    let x =
+      ((Module.Let_syntax.Let_syntax.map __pattern_syntax__003_
+          ~f:(function | (__pattern_syntax__004_, _) -> __pattern_syntax__004_))
+      [@merlin.hide ])
+    and y =
+      ((Module.Let_syntax.Let_syntax.map __pattern_syntax__003_
+          ~f:(function | (_, __pattern_syntax__005_) -> __pattern_syntax__005_))
+      [@merlin.hide ]) in
+    BODY
+     |}]
+;;
+
+let%expect_test "module-qualified return for let%pattern_map with no bindings" =
+  Ppx_pattern_bind.expand
+    Ppx_pattern_bind.map
+    ~modul
+    ~loc
+    [%expr
+      let _ = EXPR in
+      BODY]
+  |> print_expr;
+  [%expect
+    {|
+    let __pattern_syntax__006_ = EXPR in Module.Let_syntax.Let_syntax.return BODY
+     |}]
+;;
