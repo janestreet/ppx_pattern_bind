@@ -1,6 +1,8 @@
 [%%org
   {|
 #+TITLE: ppx\_pattern\_bind
+#+PARENT: ../README.md
+#+UUID: c94d5ecf-7caa-3401-6e2a-22f0fafdf61d
 
 A ppx rewriter that is intended for use with Incremental. It makes it
 easier to write incremental computations using pattern-matching in a
