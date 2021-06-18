@@ -309,6 +309,17 @@ let%expect_test "ppx should work with the defunctorized incremental" =
      : int Incr.t)
 ;;
 
+let%expect_test _ =
+  let (_ : bool Incr.t) =
+    match%pattern_bind Incr.const 5 with
+    | 0 -> return true
+    | b ->
+      let%map b = b in
+      b = 1
+  in
+  ()
+;;
+
 let loc = Location.none
 let modul = Some { txt = lident "Module"; loc }
 let print_expr expr = Pprintast.string_of_expression expr |> print_string
