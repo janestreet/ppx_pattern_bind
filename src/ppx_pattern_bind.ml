@@ -154,7 +154,10 @@ let expand_let (module Ext : Ext) ~assume_exhaustive ~loc ~modul vbs rhs =
   List.iter vbs ~f:(fun vb -> error_if_invalid_pattern (module Ext) vb.pvb_pat);
   let save_bindings, vbs = save_rhs_of_bindings vbs in
   vbs
-  |> Ppx_let_expander.project_pattern_variables ~assume_exhaustive ~modul
+  |> Ppx_let_expander.project_pattern_variables
+       ~assume_exhaustive
+       ~modul
+       ~with_location:false
   |> List.map ~f:Loc.txt
   |> Ext.bind_pattern_projections ~loc ~modul ~rhs
   |> pexp_let Nonrecursive ~loc save_bindings
