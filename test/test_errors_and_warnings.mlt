@@ -74,13 +74,13 @@ let (_ : _) =
 [%%expect
   {|
 Line _, characters _-_:
-Error (warning 8): this pattern-matching is not exhaustive.
+Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-(Multi_arg (0, _)|Tuple (_, _))
+Multi_arg (0, _)
 Line _, characters _-_:
-Error (warning 8): this pattern-matching is not exhaustive.
+Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-(Multi_arg (0, _)|Tuple (_, _))
+Multi_arg (0, _)
 |}]
 
 let (_ : _) =
@@ -92,13 +92,13 @@ let (_ : _) =
 [%%expect
   {|
 Line _, characters _-_:
-Error (warning 8): this pattern-matching is not exhaustive.
+Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-(Multi_arg (0, _)|Tuple (_, _))
+Multi_arg (0, _)
 Line _, characters _-_:
-Error (warning 8): this pattern-matching is not exhaustive.
+Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
-(Multi_arg (0, _)|Tuple (_, _))
+Multi_arg (0, _)
 |}]
 
 open Incr.Let_syntax
@@ -162,9 +162,10 @@ let bar e =
   | A x -> Incr.const 0
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
-Error (warning 26): unused variable x.
+Error (warning 26 [unused-var]): unused variable x.
 |}]
 
 let baz e =
@@ -172,9 +173,10 @@ let baz e =
   | x -> Incr.const 0
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
-Error (warning 26): unused variable x.
+Error (warning 26 [unused-var]): unused variable x.
 |}]
 
 let abc e =
@@ -182,9 +184,10 @@ let abc e =
   Incr.return 0
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
-Error (warning 26): unused variable x.
+Error (warning 26 [unused-var]): unused variable x.
 |}]
 
 let def e =
@@ -195,9 +198,9 @@ let def e =
 [%%expect
   {|
 Line _, characters _-_:
-Error (warning 26): unused variable x.
+Error (warning 26 [unused-var]): unused variable x.
 Line _, characters _-_:
-Error (warning 26): unused variable y.
+Error (warning 26 [unused-var]): unused variable y.
 |}]
 
 (* Still used warnings, but for pattern_map *)
@@ -207,9 +210,10 @@ let boo e =
   0
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
-Error (warning 27): unused variable x.
+Error (warning 27 [unused-var-strict]): unused variable x.
 |}]
 
 let abc e =
@@ -217,9 +221,10 @@ let abc e =
   0
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
-Error (warning 27): unused variable x.
+Error (warning 27 [unused-var-strict]): unused variable x.
 |}]
 
 let bar e =
@@ -227,9 +232,10 @@ let bar e =
   | A x -> 0
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
-Error (warning 27): unused variable x.
+Error (warning 27 [unused-var-strict]): unused variable x.
 |}]
 
 let baz e =
@@ -237,9 +243,10 @@ let baz e =
   | x -> 0
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
-Error (warning 27): unused variable x.
+Error (warning 27 [unused-var-strict]): unused variable x.
 |}]
 
 (* Duplicate variable error points to the right place *)
