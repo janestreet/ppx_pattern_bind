@@ -75,7 +75,7 @@ let%test "patterns" =
     | Array [| x |] -> x
     | Array _ -> return 8
     | Or_a (i, _) | Or_b (_, i) -> i
-    | Constraint (i : int) -> i
+    | Constraint (i : int Incr.t) -> i
     | Lazy i ->
       let%map i = i in
       force i
@@ -335,7 +335,7 @@ let%expect_test "module-qualified match%pattern_bind" =
   |> print_expr;
   [%expect
     {|
-    let __pattern_syntax__001_ = MY_EXPR in
+    let __pattern_syntax__001_ = MY_EXPR[@@ppxlib.do_not_enter_value ] in
     ((Module.Let_syntax.Let_syntax.bind
         ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
             ~f:(function | Choice_1 x -> 0))[@ocaml.warning "-26-27"])
@@ -364,7 +364,7 @@ let%expect_test "module-qualified let%pattern_bind" =
   |> print_expr;
   [%expect
     {|
-    let __pattern_syntax__003_ = EXPR in
+    let __pattern_syntax__003_ = EXPR[@@ppxlib.do_not_enter_value ] in
     let x =
       ((Module.Let_syntax.Let_syntax.map __pattern_syntax__003_
           ~f:(function | (__pattern_syntax__004_, _) -> __pattern_syntax__004_))
@@ -388,6 +388,7 @@ let%expect_test "module-qualified return for let%pattern_map with no bindings" =
   |> print_expr;
   [%expect
     {|
-    let __pattern_syntax__006_ = EXPR in Module.Let_syntax.Let_syntax.return BODY
+    let __pattern_syntax__006_ = EXPR[@@ppxlib.do_not_enter_value ] in
+    Module.Let_syntax.Let_syntax.return BODY
      |}]
 ;;
