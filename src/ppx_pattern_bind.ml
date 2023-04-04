@@ -3,6 +3,8 @@ open Ppxlib
 open Ast_builder.Default
 open Ppx_let_expander
 
+let locality = `global
+
 let pexp_let ~loc rec_ bindings e =
   match bindings with
   | [] -> e
@@ -139,6 +141,7 @@ let case_number ~loc ~modul exp indexed_cases =
        ~extension_kind:Extension_kind.default
        ~loc
        ~modul
+       ~locality
        exp
        (List.map indexed_cases ~f:(fun (idx, case) ->
           { case with pc_rhs = eint ~loc idx })))
@@ -299,6 +302,7 @@ let switch ~loc ~switch_loc:_ ~modul value cases =
     Ppx_let_expander.bind
     Ppx_let_expander.Extension_kind.default
     ~modul
+    ~locality
     (Merlin_helpers.hide_expression (pexp_match ~loc value cases))
 ;;
 
@@ -334,6 +338,7 @@ module Map : Ext = struct
         Ppx_let_expander.map
         Ppx_let_expander.Extension_kind.default
         ~modul
+        ~locality
         let_
   ;;
 
