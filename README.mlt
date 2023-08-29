@@ -122,7 +122,6 @@ module Record_model = struct
     ; b : bool
     ; c : float
     }
-  [@@deriving fields]
 end
 
 let render_ab a b = if b then Int.to_string a else "Error"
