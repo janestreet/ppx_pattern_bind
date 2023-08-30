@@ -306,7 +306,7 @@ let%expect_test "ppx should work with the defunctorized incremental" =
      let%map a = a
      and b = b in
      a + b
-     : int Incr.t)
+      : int Incr.t)
 ;;
 
 let%expect_test _ =
