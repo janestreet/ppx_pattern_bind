@@ -227,7 +227,14 @@ let project_bound_var ~loc ~modul ~with_location exp ~pat:{ pat; assume_exhausti
         (pexp_function ~loc [ project_the_var; catch_all_case ~loc ])
   in
   let fn = constraint_remover#expression fn in
-  bind_apply ~op_name:Map.name ~loc ~modul ~with_location ~arg:exp ~fn
+  bind_apply
+    ~prevent_tail_call:false
+    ~op_name:Map.name
+    ~loc
+    ~modul
+    ~with_location
+    ~arg:exp
+    ~fn
 ;;
 
 let project_bound_vars ~loc ~modul ~with_location exp ~lhs =
