@@ -148,8 +148,8 @@ let case_number ~loc ~modul exp indexed_cases =
 ;;
 
 let expand_case ~destruct expr (idx, match_case) =
-  let loc = { match_case.pc_lhs.ppat_loc with loc_ghost = true } in
   let rhs =
+    let loc = expr.pexp_loc in
     destruct ~lhs:match_case.pc_lhs ~rhs:expr ~body:match_case.pc_rhs
     |> Option.value
          ~default:
@@ -157,9 +157,12 @@ let expand_case ~destruct expr (idx, match_case) =
               ~loc
               Nonrecursive
               [ value_binding ~loc ~pat:match_case.pc_lhs ~expr ]
-              match_case.pc_rhs)
+              (Merlin_helpers.focus_expression match_case.pc_rhs))
   in
-  case ~lhs:(pint ~loc idx) ~guard:None ~rhs
+  case
+    ~lhs:(Merlin_helpers.hide_pattern (pint ~loc:match_case.pc_lhs.ppat_loc idx))
+    ~guard:None
+    ~rhs
 ;;
 
 let case_number_cases ~loc ~destruct exp indexed_cases =

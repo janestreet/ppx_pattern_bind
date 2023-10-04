@@ -340,7 +340,7 @@ let%expect_test "module-qualified match%pattern_bind" =
         ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
             ~f:(function | Choice_1 x -> 0))[@ocaml.warning "-26-27"])
         ~f:(function
-            | 0 ->
+            | ((0)[@merlin.hide ]) ->
                 let x =
                   ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
                       ~f:(function
