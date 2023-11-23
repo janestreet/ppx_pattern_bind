@@ -230,8 +230,10 @@ let f e =
   {|
 Line _, characters _-_:
 Error: %pattern_bind cannot be used with (module ..) patterns.
+
 Line _, characters _-_:
 Error: %pattern_bind cannot be used with exception patterns.
+
 Line _, characters _-_:
 Error: %pattern_bind cannot be used with `when`.
 |}]

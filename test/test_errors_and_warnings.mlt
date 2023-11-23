@@ -77,6 +77,7 @@ Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
 Multi_arg (0, _)
+
 Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
@@ -95,6 +96,7 @@ Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
 Multi_arg (0, _)
+
 Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
 Here is an example of a case that is not matched:
@@ -199,6 +201,7 @@ let def e =
   {|
 Line _, characters _-_:
 Error (warning 26 [unused-var]): unused variable x.
+
 Line _, characters _-_:
 Error (warning 26 [unused-var]): unused variable y.
 |}]
