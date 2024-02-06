@@ -18,7 +18,8 @@ let (_ : _) =
   | Tuple _ -> Incr.return true
 ;;
 
-[%%expect {|
+[%%expect
+  {|
 Line _, characters _-_:
 Error: Unbound module Let_syntax
 |}]

@@ -43,7 +43,8 @@ module B_model = struct
   ;;
 end
 
-[%%org {|
+[%%org
+  {|
 The final model type combines the underlying models under a variant.
 |}]
 
@@ -145,7 +146,8 @@ let render (m : Record_model.t Incr.t) =
   render_ab a b
 ;;
 
-[%%org {|
+[%%org
+  {|
 For convenience, we also have a ~let%pattern_map~:
 |}]
 
@@ -176,7 +178,8 @@ let f e =
     x + y
 ;;
 
-[%%org {|
+[%%org
+  {|
 is translated to
 |}]
 
