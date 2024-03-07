@@ -1,6 +1,6 @@
 [%%org
   {|
-#+TITLE: ppx\_pattern\_bind
+#+TITLE: ppx_pattern_bind
 
 A ppx rewriter that is intended for use with Incremental. It makes it
 easier to write incremental computations using pattern-matching in a
