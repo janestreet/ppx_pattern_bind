@@ -350,7 +350,7 @@ let%expect_test "module-qualified match%pattern_bind" =
                 CHOICE_1_BODY
             | _ -> assert false))
       [@merlin.hide ])
-     |}]
+    |}]
 ;;
 
 let%expect_test "module-qualified let%pattern_bind" =
@@ -374,7 +374,7 @@ let%expect_test "module-qualified let%pattern_bind" =
           ~f:(function | (_, __pattern_syntax__005_) -> __pattern_syntax__005_))
       [@merlin.hide ]) in
     BODY
-     |}]
+    |}]
 ;;
 
 let%expect_test "module-qualified return for let%pattern_map with no bindings" =
@@ -390,5 +390,5 @@ let%expect_test "module-qualified return for let%pattern_map with no bindings" =
     {|
     let __pattern_syntax__006_ = EXPR[@@ppxlib.do_not_enter_value ] in
     Module.Let_syntax.Let_syntax.return BODY
-     |}]
+    |}]
 ;;
