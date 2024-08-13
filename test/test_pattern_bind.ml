@@ -306,7 +306,7 @@ let%expect_test "ppx should work with the defunctorized incremental" =
      let%map a = a
      and b = b in
      a + b
-      : int Incr.t)
+     : int Incr.t)
 ;;
 
 let%expect_test _ =
@@ -336,20 +336,19 @@ let%expect_test "module-qualified match%pattern_bind" =
   [%expect
     {|
     let __pattern_syntax__001_ = MY_EXPR[@@ppxlib.do_not_enter_value ] in
-    ((Module.Let_syntax.Let_syntax.bind
-        ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
-            ~f:(function | Choice_1 x -> 0))[@ocaml.warning "-26-27"])
-        ~f:(function
-            | ((0)[@merlin.hide ]) ->
-                let x =
-                  ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
-                      ~f:(function
-                          | Choice_1 __pattern_syntax__002_ ->
-                              __pattern_syntax__002_))
-                  [@merlin.hide ]) in
-                CHOICE_1_BODY
-            | _ -> assert false))
-      [@merlin.hide ])
+    Module.Let_syntax.Let_syntax.bind
+      ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
+          ~f:(function | Choice_1 x -> 0))[@ocaml.warning "-26-27"])
+      ~f:(function
+          | ((0)[@merlin.hide ]) ->
+              let x =
+                ((Module.Let_syntax.Let_syntax.map __pattern_syntax__001_
+                    ~f:(function
+                        | Choice_1 __pattern_syntax__002_ ->
+                            __pattern_syntax__002_))
+                [@merlin.hide ]) in
+              CHOICE_1_BODY
+          | _ -> assert false)
     |}]
 ;;
 

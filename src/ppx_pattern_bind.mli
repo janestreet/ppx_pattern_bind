@@ -10,7 +10,7 @@ val replace_variable
 val project_pattern_variables
   :  assume_exhaustive:bool
   -> modul:longident loc option
-  -> with_location:bool
+  -> with_location:Ppx_let_expander.With_location.t
   -> value_binding list
   -> value_binding loc list
 

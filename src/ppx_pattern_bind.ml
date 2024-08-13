@@ -313,7 +313,7 @@ let switch ~loc ~switch_loc:_ ~modul value cases =
     Ppx_let_expander.Extension_kind.default
     ~modul
     ~locality
-    (Merlin_helpers.hide_expression (pexp_match ~loc value cases))
+    (pexp_match ~loc value cases)
 ;;
 
 module Bind : Ext = struct
@@ -414,7 +414,7 @@ let expand_let (module Ext : Ext) ~assume_exhaustive ~loc ~modul vbs rhs =
   List.iter vbs ~f:(fun vb -> error_if_invalid_pattern (module Ext) vb.pvb_pat);
   let save_bindings, vbs = save_rhs_of_bindings vbs in
   vbs
-  |> project_pattern_variables ~assume_exhaustive ~modul ~with_location:false
+  |> project_pattern_variables ~assume_exhaustive ~modul ~with_location:No_location
   |> List.map ~f:Loc.txt
   |> Ext.bind_pattern_projections ~loc ~modul ~rhs
   |> pexp_let Nonrecursive ~loc save_bindings

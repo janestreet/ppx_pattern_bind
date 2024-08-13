@@ -29,7 +29,7 @@ module A_model = struct
   type t = int
 
   let render t =
-    let%map t = t in
+    let%map t in
     Int.to_string t
   ;;
 end
@@ -38,7 +38,7 @@ module B_model = struct
   type t = float
 
   let render t =
-    let%map t = t in
+    let%map t in
     Float.to_string t
   ;;
 end
@@ -141,8 +141,7 @@ a ~match%pattern_bind~ with a single case:
 
 let render (m : Record_model.t Incr.t) =
   let%pattern_bind { a; b; _ } = m in
-  let%map a = a
-  and b = b in
+  let%map a and b in
   render_ab a b
 ;;
 
@@ -173,8 +172,7 @@ For example, the right hand side of a case such as
 let f e =
   match%pattern_bind e with
   | (x, _), _, (_, y) ->
-    let%map x = x
-    and y = y in
+    let%map x and y in
     x + y
 ;;
 
@@ -192,8 +190,7 @@ let f e =
     match%map v with
     | (_, _), _, (_, y) -> y
   in
-  let%map x = x
-  and y = y in
+  let%map x and y in
   x + y
 ;;
 
