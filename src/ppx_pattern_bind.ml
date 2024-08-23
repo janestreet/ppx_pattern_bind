@@ -3,7 +3,7 @@ open Ppxlib
 open Ast_builder.Default
 open Ppx_let_expander
 
-let locality = `global
+let locality = Locality.global
 
 let pexp_let ~loc rec_ bindings e =
   match bindings with
