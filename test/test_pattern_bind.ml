@@ -60,8 +60,7 @@ let%test "patterns" =
       a
     | Multi_arg_tuple (a, _) -> a
     | Constructor (Multi_arg_tuple (i, _), Var j) ->
-      let%map i = i
-      and j = j in
+      let%map i and j in
       i + j
     | Constructor (_, _) -> return 10
     | Variant `A -> return 4
@@ -77,7 +76,7 @@ let%test "patterns" =
     | Or_a (i, _) | Or_b (_, i) -> i
     | Constraint (i : int Incr.t) -> i
     | Lazy i ->
-      let%map i = i in
+      let%map i in
       force i
     | Open M.(A) -> return 9
     | Open M.(B x) -> x
@@ -188,7 +187,7 @@ let%expect_test _ =
     match%pattern_bind incr with
     | X (_, y) ->
       printf "P1\n";
-      let%map y = y in
+      let%map y in
       printf "P2\n";
       y
     | Y b -> b
@@ -233,7 +232,7 @@ let%expect_test _ =
   let pattern_node =
     let%pattern_bind _, y, _z = incr in
     printf "P1\n";
-    let%map y = y in
+    let%map y in
     printf "P2\n";
     not y
   in
@@ -303,8 +302,7 @@ let%expect_test "ppx should work with the defunctorized incremental" =
   let open Incremental.Let_syntax in
   ignore
     (let%pattern_bind a, b = return Incr.State.t (1, 2) in
-     let%map a = a
-     and b = b in
+     let%map a and b in
      a + b
      : int Incr.t)
 ;;
@@ -314,7 +312,7 @@ let%expect_test _ =
     match%pattern_bind Incr.const 5 with
     | 0 -> return true
     | b ->
-      let%map b = b in
+      let%map b in
       b = 1
   in
   ()
