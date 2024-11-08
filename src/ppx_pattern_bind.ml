@@ -12,10 +12,10 @@ let pexp_let ~loc rec_ bindings e =
 ;;
 
 let rec swap_constrained_alias_with_constrained_var_if_needed (pattern : pattern) =
-  match pattern.ppat_desc with
+  match Ppxlib_jane.Shim.Pattern_desc.of_parsetree pattern.ppat_desc with
   | Ppat_alias (_, var) | Ppat_var var ->
     Some (ppat_var ~loc:{ pattern.ppat_loc with loc_ghost = true } var, var)
-  | Ppat_constraint (inner, t) ->
+  | Ppat_constraint (inner, Some t, _) ->
     (match swap_constrained_alias_with_constrained_var_if_needed inner with
      | Some (inner, var) ->
        Some (ppat_constraint ~loc:{ inner.ppat_loc with loc_ghost = true } inner t, var)
@@ -49,10 +49,10 @@ let pattern_variables pattern =
 ;;
 
 let rec remove_constraint_from_var_or_alias pattern =
-  match pattern.ppat_desc with
-  | Ppat_constraint (({ ppat_desc = Ppat_var _ | Ppat_alias _; _ } as inner), _) ->
+  match Ppxlib_jane.Shim.Pattern_desc.of_parsetree pattern.ppat_desc with
+  | Ppat_constraint (({ ppat_desc = Ppat_var _ | Ppat_alias _; _ } as inner), _, _) ->
     Some inner
-  | Ppat_constraint (inner, _) ->
+  | Ppat_constraint (inner, _, _) ->
     (match remove_constraint_from_var_or_alias inner with
      | Some inner -> Some inner
      | None -> None)
@@ -84,9 +84,9 @@ type pat_exh =
 
 let extract_var_or_alias_pattern (pattern : pattern) ~f =
   let rec helper pattern =
-    match pattern.ppat_desc with
+    match Ppxlib_jane.Shim.Pattern_desc.of_parsetree pattern.ppat_desc with
     | Ppat_var var | Ppat_alias (_, var) -> Some (pattern, var)
-    | Ppat_constraint (inner, _) -> helper inner
+    | Ppat_constraint (inner, _, _) -> helper inner
     | _ -> None
   in
   match helper pattern with
