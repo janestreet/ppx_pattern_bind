@@ -275,3 +275,25 @@ let biz e =
 Line _, characters _-_:
 Error: Variable x is bound several times in this matching
 |}]
+
+let no_let_rec e =
+  let%pattern_bind rec x = e in
+  ()
+;;
+
+[%%expect
+  {|
+Line _, characters _-_:
+Error: %pattern_bind cannot be used with 'let rec'
+|}]
+
+let no_let_mutable e =
+  let%pattern_bind mutable x = e in
+  ()
+;;
+
+[%%expect
+  {|
+Line _, characters _-_:
+Error: %pattern_bind cannot be used with 'let mutable'
+|}]
