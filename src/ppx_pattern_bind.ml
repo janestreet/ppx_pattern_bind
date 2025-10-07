@@ -133,7 +133,7 @@ let with_warning_attribute str expr =
   }
 ;;
 
-let case_number ~loc ~modul exp indexed_cases =
+let case_number ~loc ~modul exp ~reachable_cases ~unreachable_cases =
   with_warning_attribute
     "-26-27" (* unused variable warnings *)
     (expand_match
@@ -143,11 +143,12 @@ let case_number ~loc ~modul exp indexed_cases =
        ~modul
        ~locality
        exp
-       (List.map indexed_cases ~f:(fun (idx, case) ->
-          { case with pc_rhs = eint ~loc idx })))
+       (List.mapi reachable_cases ~f:(fun idx case ->
+          { case with pc_rhs = eint ~loc idx })
+        @ unreachable_cases))
 ;;
 
-let expand_case ~destruct expr (idx, match_case) =
+let expand_case ~destruct expr idx match_case =
   let rhs =
     let loc = expr.pexp_loc in
     destruct ~lhs:match_case.pc_lhs ~rhs:expr ~body:match_case.pc_rhs
@@ -165,8 +166,8 @@ let expand_case ~destruct expr (idx, match_case) =
     ~rhs
 ;;
 
-let case_number_cases ~loc ~destruct exp indexed_cases =
-  List.map indexed_cases ~f:(expand_case ~destruct exp) @ [ catch_all_case ~loc ]
+let case_number_cases ~loc ~destruct exp reachable_cases =
+  List.mapi reachable_cases ~f:(expand_case ~destruct exp) @ [ catch_all_case ~loc ]
 ;;
 
 let name_expr expr =
@@ -186,7 +187,12 @@ let indexed_match ~loc ~modul ~destruct ~switch expr cases =
     { loc_ghost = true; loc_start = first_case_loc.loc_start; loc_end = loc.loc_end }
   in
   let expr_binding, expr = name_expr expr in
-  let indexed_cases = List.mapi cases ~f:(fun idx case -> idx, case) in
+  let unreachable_cases, reachable_cases =
+    List.partition_tf cases ~f:(fun case ->
+      match case.pc_rhs.pexp_desc with
+      | Pexp_unreachable -> true
+      | _ -> false)
+  in
   let hider =
     object
       inherit Ast_traverse.map as super
@@ -195,11 +201,12 @@ let indexed_match ~loc ~modul ~destruct ~switch expr cases =
   in
   let case_number =
     hider#expression
-      (constraint_remover#expression (case_number ~loc ~modul expr indexed_cases))
+      (constraint_remover#expression
+         (case_number ~loc ~modul expr ~reachable_cases ~unreachable_cases))
   in
   let assume_exhaustive = List.length cases <= 1 in
   let destruct = destruct ~assume_exhaustive ~loc ~modul in
-  let case_number_cases = case_number_cases ~loc ~destruct expr indexed_cases in
+  let case_number_cases = case_number_cases ~loc ~destruct expr reachable_cases in
   pexp_let
     ~loc
     Nonrecursive
@@ -481,12 +488,16 @@ let expand_match ~modul (module Ext : Ext) ~loc expr cases =
 ;;
 
 let expand (module Ext : Ext) ~modul ~loc expr =
-  match expr.pexp_desc with
-  | Pexp_let (rec_flag, vbs, exp) ->
-    (match rec_flag with
-     | Nonrecursive -> ()
-     | Recursive ->
-       Location.raise_errorf ~loc "%%%s cannot be used with 'let rec'" Ext.name);
+  match
+    Ppxlib_jane.Shim.Expression_desc.of_parsetree expr.pexp_desc ~loc:expr.pexp_loc
+  with
+  | Pexp_let (mutable_flag, rec_flag, vbs, exp) ->
+    (match mutable_flag, rec_flag with
+     | Immutable, Nonrecursive -> ()
+     | _, Recursive ->
+       Location.raise_errorf ~loc "%%%s cannot be used with 'let rec'" Ext.name
+     | Mutable, _ ->
+       Location.raise_errorf ~loc "%%%s cannot be used with 'let mutable'" Ext.name);
     expand_let (module Ext) ~assume_exhaustive:true ~loc ~modul vbs exp
   | Pexp_match (expr, cases) -> expand_match (module Ext) ~loc ~modul expr cases
   | _ ->
