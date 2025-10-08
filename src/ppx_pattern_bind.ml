@@ -223,11 +223,11 @@ let project_bound_var ~loc ~modul ~with_location exp ~pat:{ pat; assume_exhausti
   in
   let fn =
     if assume_exhaustive
-    then pexp_function ~loc [ project_the_var ]
+    then pexp_function_cases ~loc [ project_the_var ]
     else
       with_warning_attribute
         "-11" (* unused case warning *)
-        (pexp_function ~loc [ project_the_var; catch_all_case ~loc ])
+        (pexp_function_cases ~loc [ project_the_var; catch_all_case ~loc ])
   in
   let fn = constraint_remover#expression fn in
   bind_apply
