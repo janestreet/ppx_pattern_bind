@@ -121,16 +121,16 @@ let replace_variable ~f x =
   replacer#pattern x
 ;;
 
+let warning_attribute ~loc str =
+  attribute
+    ~loc
+    ~name:(Loc.make ~loc "ocaml.warning")
+    ~payload:(PStr [ pstr_eval ~loc (estring ~loc str) [] ])
+;;
+
 let with_warning_attribute str expr =
   let loc = expr.pexp_loc in
-  { expr with
-    pexp_attributes =
-      attribute
-        ~loc
-        ~name:(Loc.make ~loc "ocaml.warning")
-        ~payload:(PStr [ pstr_eval ~loc (estring ~loc str) [] ])
-      :: expr.pexp_attributes
-  }
+  { expr with pexp_attributes = warning_attribute ~loc str :: expr.pexp_attributes }
 ;;
 
 let case_number ~loc ~modul exp ~reachable_cases ~unreachable_cases =
@@ -148,7 +148,63 @@ let case_number ~loc ~modul exp ~reachable_cases ~unreachable_cases =
         @ unreachable_cases))
 ;;
 
+let estimate_variables_used_in expr variables =
+  let vars_used = Hashtbl.create (module String) in
+  let find_vars =
+    object
+      inherit Ast_traverse.iter as super
+
+      method! expression_desc desc =
+        match desc with
+        | Pexp_ident { txt = Lident v; loc } ->
+          if Set.mem variables v then Hashtbl.add_exn vars_used ~key:v ~data:loc else ()
+        (* We just stop descending here since we don't know if someone is shadowing a
+           variable. If there's demand, we can implement most of the cases here, but
+           hopefully, nobody is using these in their when clauses. *)
+        | Pexp_let _
+        | Pexp_function _
+        | Pexp_match _
+        | Pexp_try _
+        | Pexp_for _
+        | Pexp_object _
+        | Pexp_open _
+        | Pexp_letop _ -> ()
+        | _ -> super#expression_desc desc
+    end
+  in
+  find_vars#expression expr;
+  Hashtbl.to_alist vars_used |> List.map ~f:(fun (txt, loc) -> { txt; loc })
+;;
+
+let add_dummy_usages expr = function
+  | [] -> expr
+  | _ :: _ as usages ->
+    let value_bindings =
+      List.map usages ~f:(fun { txt = var; loc } ->
+        let loc = { loc with loc_ghost = true } in
+        value_binding
+          ~loc
+          ~pat:[%pat? (_ : _)]
+          ~expr:(Ast_helper.Exp.ident ~loc { loc; txt = Lident var }))
+    in
+    pexp_let ~loc:{ expr.pexp_loc with loc_ghost = true } Nonrecursive value_bindings expr
+;;
+
+let add_usages_for_vars_definitely_used_in_when_clause case =
+  match case.pc_guard with
+  | None -> case
+  | Some guard ->
+    let lhs_vars =
+      pattern_variables case.pc_lhs
+      |> List.map ~f:(fun (_, l) -> l.txt)
+      |> Set.of_list (module String)
+    in
+    let vars_used_in_guard = estimate_variables_used_in guard lhs_vars in
+    { case with pc_rhs = add_dummy_usages case.pc_rhs vars_used_in_guard }
+;;
+
 let expand_case ~destruct expr idx match_case =
+  let match_case = add_usages_for_vars_definitely_used_in_when_clause match_case in
   let rhs =
     let loc = expr.pexp_loc in
     destruct ~lhs:match_case.pc_lhs ~rhs:expr ~body:match_case.pc_rhs
