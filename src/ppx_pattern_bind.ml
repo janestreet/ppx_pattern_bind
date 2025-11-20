@@ -329,9 +329,8 @@ let project_pattern_variables ~assume_exhaustive ~modul ~with_location vbs =
 ;;
 
 module type Ext = sig
-  (* The part that goes after [let%] and [match%]. If the name is
-     "pattern_bind", then [let%pattern_bind] and [match%pattern_bind] are
-     what get expanded. *)
+  (* The part that goes after [let%] and [match%]. If the name is "pattern_bind", then
+     [let%pattern_bind] and [match%pattern_bind] are what get expanded. *)
   val name : string
 
   (* Given a list of variables bound to their corresponding "projection expression" (the
@@ -384,14 +383,13 @@ module Bind : Ext = struct
 
   let bind_pattern_projections ~loc ~modul:_ projection_bindings ~rhs =
     let loc = { loc with loc_ghost = true } in
-    (* For [let%pattern_bind], we don't bind on the match case, so nothing
-       constrains the resulting expression to be an incremental. We used to
-       generate [if false then return (assert false) else <expr>] to
-       compensate, but that causes problems with the defunctorized interface
-       of incremental, as [return] takes an extra argument. [if false then
-       map (assert false) ~f:Fn.id else <expr>] avoids that but causes type
-       errors in bonsai where they sort of abuse this preprocessor by using
-       this with this thing that's not a monad (see legacy_api.ml). *)
+    (* For [let%pattern_bind], we don't bind on the match case, so nothing constrains the
+       resulting expression to be an incremental. We used to generate
+       [if false then return (assert false) else <expr>] to compensate, but that causes
+       problems with the defunctorized interface of incremental, as [return] takes an
+       extra argument. [if false then map (assert false) ~f:Fn.id else <expr>] avoids that
+       but causes type errors in bonsai where they sort of abuse this preprocessor by
+       using this with this thing that's not a monad (see legacy_api.ml). *)
     pexp_let ~loc Nonrecursive projection_bindings rhs
   ;;
 
@@ -445,7 +443,7 @@ let error_if_invalid_pattern (module Ext : Ext) pattern =
   finder#pattern pattern
 ;;
 
-(* Translations for let%pattern_bind
+(*=Translations for let%pattern_bind
 
    let%pattern_bind (x, y, _) = e1
    and { z; _} = e2
@@ -483,7 +481,7 @@ let expand_let (module Ext : Ext) ~assume_exhaustive ~loc ~modul vbs rhs =
   |> pexp_let Nonrecursive ~loc save_bindings
 ;;
 
-(* Translations for match%pattern_bind
+(*=Translations for match%pattern_bind
 
 
    {[
