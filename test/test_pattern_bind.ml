@@ -162,8 +162,8 @@ let%expect_test "effects" =
 ;;
 
 let stabilize f =
-  (* normalize the output to avoid depending on the specific evaluation
-     order chosen by incremental *)
+  (* normalize the output to avoid depending on the specific evaluation order chosen by
+     incremental *)
   Incr.stabilize ();
   f ()
   |> String.split_lines
@@ -221,8 +221,8 @@ let%expect_test _ =
   Incr.Observer.disallow_future_use match_normal
 ;;
 
-(* let%pattern_bind should not refire unless the values of the
-   variables in the pattern change *)
+(* let%pattern_bind should not refire unless the values of the variables in the pattern
+   change *)
 
 let%expect_test _ =
   let incr_v, incr =
@@ -261,8 +261,8 @@ let%expect_test _ =
   Incr.Observer.disallow_future_use let_normal
 ;;
 
-(* let%pattern_map should not refire unless the values of the
-   variables in the pattern change *)
+(* let%pattern_map should not refire unless the values of the variables in the pattern
+   change *)
 
 let%expect_test _ =
   let incr_v, incr =
