@@ -3,5 +3,5 @@
  (libraries base ppx_let.expander ppxlib ppxlib_jane)
  (preprocess
   (pps ppxlib.metaquot))
- (kind ppx_deriver)
+ (kind ppx_rewriter)
  (public_name ppx_pattern_bind))
