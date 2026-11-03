@@ -1,7 +1,7 @@
 (library
  (name ppx_pattern_bind)
- (libraries base ppx_let.expander ppxlib ppxlib_jane)
- (preprocess
-  (pps ppxlib.metaquot))
+ (libraries ppx_helpers ppx_let.expander ppx_pattern_bind_expander ppxlib
+   ppxlib_jane)
+ (preprocess no_preprocessing)
  (kind ppx_rewriter)
  (public_name ppx_pattern_bind))

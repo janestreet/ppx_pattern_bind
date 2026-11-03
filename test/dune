@@ -2,4 +2,5 @@
  (name test_ppx_pattern_bind)
  (libraries core incremental ppx_pattern_bind ppxlib)
  (preprocess
-  (pps ppx_jane ppx_pattern_bind ppxlib.metaquot)))
+  (pps ppx_jane ppx_pattern_bind ppxlib.metaquot
+    -compare-require-explicit-locality)))
