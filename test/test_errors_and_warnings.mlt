@@ -76,13 +76,11 @@ let (_ : _) =
   {|
 Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
-Here is an example of a case that is not matched:
-Multi_arg (0, _)
+  Here is an example of a case that is not matched: Multi_arg (0, _)
 
 Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
-Here is an example of a case that is not matched:
-Multi_arg (0, _)
+  Here is an example of a case that is not matched: Multi_arg (0, _)
 |}]
 
 let (_ : _) =
@@ -95,13 +93,11 @@ let (_ : _) =
   {|
 Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
-Here is an example of a case that is not matched:
-Multi_arg (0, _)
+  Here is an example of a case that is not matched: Multi_arg (0, _)
 
 Line _, characters _-_:
 Error (warning 8 [partial-match]): this pattern-matching is not exhaustive.
-Here is an example of a case that is not matched:
-Multi_arg (0, _)
+  Here is an example of a case that is not matched: Multi_arg (0, _)
 |}]
 
 open Incr.Let_syntax
